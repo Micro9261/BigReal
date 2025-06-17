@@ -49,7 +49,7 @@ public:
     BigReal operator/(const BigReal &) const;
 
 private:
-    std::vector<int> _chars;
+    std::vector<uint8_t> _chars;
     bool _negative;
     int _comma_pos;
 

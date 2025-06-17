@@ -79,7 +79,7 @@ BigReal& BigReal::operator=(const std::string & s)
 {
     this->_negative = false;
     this->_comma_pos = -1;
-    std::vector<int> temp;
+    std::vector<uint8_t> temp;
 
     size_t pos = 0;
     for (char test : s)
@@ -289,8 +289,8 @@ BigReal BigReal::operator+(const BigReal & b) const
         result._negative = this->_negative;
         int add_zeros = static_cast<int>(this->_chars.size() - this->_comma_pos) - static_cast<int>(b._chars.size() - b._comma_pos);
         result._comma_pos = this->_comma_pos > b._comma_pos ? this->_comma_pos : b._comma_pos;
-        std::vector<int> val1 = this->_chars;
-        std::vector<int> val2 = b._chars;
+        std::vector<uint8_t> val1 = this->_chars;
+        std::vector<uint8_t> val2 = b._chars;
         while (add_zeros < 0)
         {
             val1.push_back(0);
@@ -301,7 +301,7 @@ BigReal BigReal::operator+(const BigReal & b) const
             val2.push_back(0);
             add_zeros--;
         }
-        std::vector<int> res;
+        std::vector<uint8_t> res;
         size_t len = val1.size() > val2.size() ? val1.size() : val2.size();
         int addition = 0;
         for (size_t i = 0; i < len; i++)
@@ -343,12 +343,15 @@ BigReal BigReal::operator-(const BigReal & b) const
     }
     else
     {
-        std::vector<int> val1;
-        std::vector<int> val2;
+        std::vector<uint8_t> val1;
+        std::vector<uint8_t> val2;
         int add_zeros = 0;
+        // std::cout << *this << " " << b << " output" << std::endl;
         bool this_greater = *this > b;
+        // std::cout << this_greater << " result\n";
         if (this->_negative)
             this_greater = !this_greater;
+        // std::cout << this_greater << " result 2\n";
         if (this_greater)
         {
             val1 = this->_chars;
@@ -376,7 +379,7 @@ BigReal BigReal::operator-(const BigReal & b) const
             add_zeros--;
         }
 
-        std::vector<int> res;
+        std::vector<uint8_t> res;
         int substraction = 0;
         for (size_t i = 0; i < val1.size(); i++)
         {
@@ -423,6 +426,9 @@ BigReal BigReal::operator*(const BigReal & b) const
             res.at(j + i) += *(this->_chars.end() - j - 1) * (*(b._chars.end() - i - 1));
         res.push_back( *(this->_chars.end() - this->_chars.size()) * (*(b._chars.end() - i - 1)));
     }
+    // for (auto x : res)
+    //     std::cout << x << " ";
+    // std::cout << std::endl;
     int addition = 0;
     for (size_t i = 0; i < res.size(); i++)
     {
@@ -435,7 +441,10 @@ BigReal BigReal::operator*(const BigReal & b) const
     
     result._comma_pos = static_cast<int>(res.size()) - result._comma_pos;
     std::reverse(res.begin(), res.end());
-    result._chars = std::move(res);
+    std::vector<uint8_t> res_to_write;
+    for (int val : res)
+        res_to_write.push_back(val);
+    result._chars = std::move(res_to_write);
     result.simplify();
 
     if (result == BigReal("-0"))
@@ -478,17 +487,21 @@ BigReal BigReal::operator/(const BigReal & b) const
     {
         int count = 0;
         BigReal val = temp - divisor;
+        // std::cout << temp << std::endl;
         while (val >= BigReal("0"))
         {
             count++;
             temp = val;
             val = temp - divisor;
+            // std::cout << temp << std::endl;
         }
+        // std::cout << "push: " << count << std::endl;
         res.push_back(count);
         if (temp == BigReal("0") && i >= dividend._chars.size())
         {
             break;
         }
+        // std::cout << "Hello\n";
         int to_push;
         if (i < dividend._chars.size())
         to_push = dividend._chars.at(i);
@@ -499,9 +512,15 @@ BigReal BigReal::operator/(const BigReal & b) const
         }
         temp._chars.push_back(to_push);
         ++temp._comma_pos;
+        // std::cout << "after: " << temp << std::endl;
         temp.simplify();
+        // std::cout << "after simplify: " << temp << std::endl;
     }
-    result._chars = std::move(res);
+    // std::cout << "Here";
+    std::vector<uint8_t> res_to_write;
+    for (int val : res)
+    res_to_write.push_back(val);
+    result._chars = std::move(res_to_write);
     
     result.simplify();
     return result;
